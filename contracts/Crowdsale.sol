@@ -1,7 +1,7 @@
 pragma solidity ^0.4.15;
 
-import './Queue.sol';
-import './Token.sol';
+import "./Queue.sol";
+import "./Token.sol";
 
 /**
  * @title Crowdsale
