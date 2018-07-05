@@ -74,7 +74,4 @@ contract('TokenTest', function(accounts) {
 
 	});
 
-	describe('Your string here', function() {
-		// YOUR CODE HERE
-	});
 });
