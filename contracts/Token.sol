@@ -39,6 +39,10 @@ contract Token is ERC20Interface {
         creator = msg.sender;
     }
 
+    function soldTokens() external view returns(uint256) {
+        return totalSupply-balances[creator];
+    }
+
     function balanceOf(address _owner) public view returns(uint256) {        
         return balances[_owner];
     }

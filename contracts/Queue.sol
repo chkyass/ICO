@@ -12,22 +12,25 @@ contract Queue {
     address[size] queue;
     address creator;
     uint8 free;
-    uint max;
+    uint maxDelay;
     mapping(address => uint) pushTime;
 
     /* Add events */
     event TimeLimit(address addr);
+
 
     modifier isCreator() {
         require(msg.sender == creator);
         _;
     }
 
+
     /* Add constructor */
-    constructor(uint _max){
+    constructor(uint _maxDelay) {
         creator = msg.sender;
-        max = _max;
+        maxDelay = _maxDelay;
     }
+
 
     /* Returns the number of people waiting in line */
     function qsize() public view returns(uint8) {
@@ -62,7 +65,7 @@ contract Queue {
      */
     function checkTime() external{
         address first = queue[0];
-        if((now - pushTime[first]) >= max){
+        if((now - pushTime[first]) >= maxDelay){
             dequeue();
             emit TimeLimit(first);
         }
@@ -71,18 +74,21 @@ contract Queue {
     /* Removes the first person in line; either when their time is up or when
      * they are done with their purchase
      */
-    function dequeue() public {
-        for(uint8 i = 1; i<free; i++){
+    function dequeue() public {    
+        for(uint8 i = 1; i<free; i++)
             queue[i-1] = queue[i];
-        }
 
-        if(free != 0) {
+        if(free != 0)
             free--;
-        }
     }
 
     /* Places `addr` in the first empty position in the queue */
     function enqueue(address _addr) external {
+        for(uint8 i = 0; i<free; i++) {
+            if(_addr == queue[i])
+                return;
+        }
+        
         if(free < size) {
             queue[free] = _addr;
             pushTime[_addr] = now;

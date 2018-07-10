@@ -30,7 +30,7 @@ contract('TokenTest', function(accounts) {
 			assert.equal(creatorBalance.valueOf(), intialAmount);
 		});
 		
-		it("Check purchase", async function() {
+		it("Check purchase and isCreator Modifier", async function() {
 			try {
 				await token.purchase(account[1], 100);
 				let buyerBalance = await token.balanceOf(accounts[1]);
@@ -45,9 +45,10 @@ contract('TokenTest', function(accounts) {
 				await token.purchase(accounts[1], 5000, {from: accounts[2]});
 				throw null;
 			} catch (error){}
-		});
+		});	
+	});
 	
-	describe('Token Creator funtions', function(){
+	describe('Token Creator funtions', function() {
 		it("Destroy tokens", async function() {
 			await token.burn(200);
 			let unsold = await token.balanceOf(accounts[0]);
@@ -71,7 +72,20 @@ contract('TokenTest', function(accounts) {
 		});
 	});
 
-
-	});
-
+	describe('Allowance', function() {
+		it("Transfer From", async function() {
+			await token.purchase(accounts[1], 50);
+			await token.approve(accounts[2], 25,{from:accounts[1]});
+			let allowance = await token.allowance(accounts[1], accounts[2]);
+			assert.equal(allowance.valueOf(), 25);
+			await token.transferFrom(accounts[1], accounts[2], 25);
+			await token.transferFrom(accounts[1], accounts[2], 1);
+			let acc1bal = await token.balanceOf(accounts[1]);
+			let acc2bal = await token.balanceOf(accounts[2]);
+			allowance = await token.allowance(accounts[1], accounts[2]);
+			assert.equal(acc1bal.valueOf(), 25);
+			assert.equal(acc2bal.valueOf(), 25);
+			assert.equal(allowance.valueOf(), 0);
+		})
+	})
 });
