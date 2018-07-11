@@ -56,7 +56,7 @@ contract Queue {
             if(msg.sender == queue[i])
                 return i;
         }
-        return size + 1;
+        return size;
     }
 
 
@@ -65,7 +65,7 @@ contract Queue {
      */
     function checkTime() external{
         address first = queue[0];
-        if((now - pushTime[first]) >= maxDelay){
+        if((now - pushTime[first]) >= maxDelay) {
             dequeue();
             emit TimeLimit(first);
         }
@@ -82,7 +82,7 @@ contract Queue {
             free--;
     }
 
-    /* Places `addr` in the first empty position in the queue */
+    /* Places `addr` in the first empty position if it isn't in the queue */
     function enqueue(address _addr) external {
         for(uint8 i = 0; i<free; i++) {
             if(_addr == queue[i])

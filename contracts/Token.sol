@@ -12,7 +12,6 @@ contract Token is ERC20Interface {
 
     string public constant name = "CHK token";
     string public constant symbole = "CHK";
-    uint8 public constant decimals = 18;
 
     //Balances for each account
     mapping(address => uint256) private balances;
@@ -82,16 +81,9 @@ contract Token is ERC20Interface {
     }
 
     function burn(uint256 _value) external returns (bool) {
-        // Normal user can burn his credit
         if(balances[msg.sender] >= _value) {
             totalSupply -= _value;
             balances[msg.sender] -= _value;
-            emit Burn(msg.sender, _value);
-            return true;
-        // Creator can burn unsold credit
-        } else if(msg.sender == creator && balances[creator] >= _value) {
-            totalSupply -= _value;
-            balances[creator] -= _value;
             emit Burn(msg.sender, _value);
             return true;
         }

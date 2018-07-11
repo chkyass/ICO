@@ -1,6 +1,5 @@
 'use strict';
 
-/* Add the dependencies you're testing */
 const Queue = artifacts.require("./Queue.sol");
 
 function sleep(seconds) {
@@ -14,16 +13,18 @@ contract('TestQueue', function(accounts) {
     let queue;
 
 
-	/* Do something before every `describe` method */
 	beforeEach(async function() {
 	    queue = await Queue.new(1);
 	});
 
-	/* Group test cases together 
-	 * Make sure to provide descriptive strings for method arguements and
-	 * assert statements
-	 */
-	describe('Functionalities modifying state', function() {
+	describe('Test', function() {
+        it("Check enqueue", async function() {
+            await queue.enqueue(accounts[1]);
+            await queue.enqueue(accounts[1]);
+            let free = queue.qsize();
+            assert(free, 1);
+        });
+
 		it("Check Timeout", async function() {    
             await queue.enqueue(accounts[1]);
             sleep(2);
@@ -31,8 +32,12 @@ contract('TestQueue', function(accounts) {
             await queue.checkTime();
             let free =  await queue.qsize();
             assert.equal(free, 1);
-		});
-		
+            sleep(2);
+            await queue.checkTime();
+            free = await queue.qsize();
+            assert.equal(free, 0);
+        });
+        
 	});
 
 });

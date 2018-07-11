@@ -14,17 +14,22 @@ contract Crowdsale {
     address owner;
     uint256 saleDuration;
     uint256 saleStart;
-    uint256 sold;
-    Token tokens;
-    //How many tokens you can buy with 1 wei
-    uint256 public exchangeRate;
-    Queue queue;
 
-    mapping(address => uint256) balances;
+    /* How many tokens you can buy with 1 wei */
+    uint256 public exchangeRate;    
+    Queue queue;
+    Token tokens;
+
+    /* Map an address to the amount waiting to be used to purchase tokens */
     mapping(address => uint256) orders;
 
     modifier isOwner() {
         require(msg.sender == owner);
+        _;
+    }
+
+    modifier saleNotOver() {
+        require((now - saleStart) < saleDuration);
         _;
     }
 
@@ -42,6 +47,11 @@ contract Crowdsale {
     }
 
 
+    function ordersOf(address _spender) external view returns(uint256) {
+        return orders[_spender];
+    }
+
+
     function mint(uint256 _amount) external isOwner() {
         tokens.mint(_amount);
     }
@@ -51,55 +61,48 @@ contract Crowdsale {
         tokens.burn(_amount);
     }
 
-    function saleOver() public view returns(bool) {
-        if(now  > saleDuration + saleStart)
-            return true;
-    }
-
-    function order() external payable {
-        if (saleOver())
-            return;
-        
+    /* if sale duration isn't over, if the queue isn't full
+     * enqueue the order */
+    function order() external payable saleNotOver(){      
         queue.checkTime();
         uint256 qsize = queue.qsize();
         if(qsize < 5) {
-            balances[msg.sender] += msg.value;
             orders[msg.sender] += msg.value;
             queue.enqueue(msg.sender);
         }
     }
 
-    function buy() external {
-        if(saleOver())
-            return;
-
+    /* if the caller is the first in the queue, there is
+     * someone behind him, and he doesn't stayed too long 
+     * in the first position of queue, apply the order */
+    function buy() external saleNotOver(){
         queue.checkTime();
-        if(queue.getFirst() == msg.sender) {
+        if(queue.getFirst() == msg.sender && orders[msg.sender] != 0) {
             if(queue.qsize() > 1) {
                 queue.dequeue();
                 tokens.purchase(msg.sender, orders[msg.sender]*exchangeRate);
                 emit Purchase(msg.sender, orders[msg.sender]);
-                orders[msg.sender] = 0;
+                delete orders[msg.sender];
             }
         }
     }
 
-    function refund(uint256 _amount) external {
-        if(saleOver())
-            return;
-
-        if(balances[msg.sender] >= _amount) {
-            tokens.refund(msg.sender, _amount*exchangeRate);
-            balances[msg.sender] -= _amount;
-            orders[msg.sender] -= _amount;
-            msg.sender.call.value(_amount);
+    /* Refund tokens*/
+    function refund(uint256 _amount) external saleNotOver(){
+        uint256 balance = tokens.balanceOf(msg.sender);
+        if(balance >= _amount) {
+            tokens.refund(msg.sender, _amount);
+            if(!msg.sender.send(_amount*exchangeRate)) {
+                tokens.purchase(msg.sender, _amount);
+                return;
+            }
             emit Refund(msg.sender, _amount);
-        }       
+        }
     }
 
     function getFunds() external isOwner() {
-        if(saleOver())
-            msg.sender.transfer(address(this).balance);
+        require(now > saleDuration + saleStart);
+        msg.sender.transfer(address(this).balance);
     }
 
     function () payable {}
