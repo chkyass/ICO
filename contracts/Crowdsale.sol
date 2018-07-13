@@ -66,7 +66,7 @@ contract Crowdsale {
     function order() external payable saleNotOver(){      
         queue.checkTime();
         uint256 qsize = queue.qsize();
-        if(qsize < 5) {
+        if(qsize < 5 && orders[msg.sender] + msg.value > orders[msg.sender] ) {
             orders[msg.sender] += msg.value;
             queue.enqueue(msg.sender);
         }

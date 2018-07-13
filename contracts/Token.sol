@@ -47,7 +47,7 @@ contract Token is ERC20Interface {
     }
 
     function transfer(address _to, uint256 _value) external returns(bool) {
-        if(balances[msg.sender] >= _value) {
+        if(balances[msg.sender] >= _value && balances[_to] + _value > balances[_to]) {
             balances[msg.sender] -= _value;
             balances[_to] += _value;
             emit Transfer(msg.sender, _to, _value);
@@ -57,7 +57,7 @@ contract Token is ERC20Interface {
     }
 
     function approve(address _spender, uint256 _value) external returns(bool) {
-        if(balances[msg.sender] >= _value) {
+        if(balances[msg.sender] >= _value && allowed[msg.sender][_spender] + _value > allowed[msg.sender][_spender]) {
             allowed[msg.sender][_spender] += _value;
             emit Approval(msg.sender, _spender, _value);
             return true;
@@ -66,7 +66,7 @@ contract Token is ERC20Interface {
     }
 
     function transferFrom(address _from, address _to, uint256 _value) external returns (bool) {
-        if(balances[_from] >= _value && allowed[_from][_to] >= _value) {
+        if(balances[_from] >= _value && allowed[_from][_to] >= _value && balances[_to] + _value > balances[_to]) {
             balances[_from] -= _value;
             allowed[_from][_to] -= _value;
             balances[_to] += _value;
@@ -91,13 +91,15 @@ contract Token is ERC20Interface {
     }
 
     function mint(uint256 _value) external  isCreator() {
-        totalSupply += _value;
-        balances[creator] += _value;
-        emit Mint(_value);
+        if(totalSupply + _value > totalSupply) {
+            totalSupply += _value;
+            balances[creator] += _value;
+            emit Mint(_value);
+        }
     }
 
     function purchase(address _buyer, uint256 _value) external isCreator() returns (bool) {
-        if(totalSupply >= _value) {
+        if(balances[creator] >= _value && balances[_buyer] + _value > balances[_buyer]) {
             balances[creator] -= _value;
             balances[_buyer] += _value;
             emit Purchase(_buyer, _value); 
