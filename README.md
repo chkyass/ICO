@@ -1,31 +1,6 @@
 # MIDTERM: Launching an ICO
 Welcome to the Blockchain for Developers DeCal's midterm assignment. You'll be designing your own ICO.
 
-## Midterm Team Assignment
-
-###### Project Partner 1
-
-Name:
-
-SID:
-
-Email:
-
-###### Project Partner 2
-
-Name:
-
-SID:
-
-Email:
-
-###### Project Partner 3 (if any)
-
-Name:
-
-SID:
-
-Email:
 
 ## Midterm Instructions
 
